@@ -1,7 +1,19 @@
+
+	
+body
+	div.hero-unit
+		h1 Speech Recognition Demo
+		h2 Command keywords will appear in Bold (hopefully).
+		br
+		button(id='button', onclick='toggleStartStop()').btn.center
+		img(id='image_src' , src='images/mic.gif')
+		p
+			span(id='final_span').text-info
+			span(id='interim_span').muted
+		div
+			h6 
+				span(id='commands_span').warning	
+
+link(rel='stylesheet', href='css/bootstrap.css')
 script(src='js/hello.js')
-
-form(action='http://www.example.com/search')
-    input(type='text-area', id='q', name='q', size=60)
-    input(type='button', value='Click to Speak', onclick='recognition.start()')
-
-
+script(src='js/bootstrap.min.js')
