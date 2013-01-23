@@ -1,11 +1,11 @@
 //Help Commands
-var List = new Object();
-List.str = "List"
-List.commands = ""
-
 var Search = new Object();
 Search.str = "Search"
-Search.commands = ""
+Search.commands = []
+
+var List = new Object();
+List.str = "List"
+List.commands = [Search]
 
 // Global Commands
 var Faster = new Object();
@@ -81,34 +81,42 @@ function toggleStartStop() {
 
 //Searches input string against list of cammandsand returns array of command + substring
 function commandFind(event, commandList) {	
-	if (typeof(event) != "undefined") {
+	if (typeof(event) != "undefined"  && typeof(commandList) != "undefined") {
 		for (var i = 0; i < commandList.length; i++) {
 			commandIndex = event.search(commandList[i].str.toLowerCase())
 			if (commandIndex != -1) {
 				input = event.substr(0,commandIndex)
-				command = commandList[i]; //This is an object
+				command_next = commandList[i]; //This is an object
 				substring = event.substr(commandIndex+commandList[i].str.length)
-				result = [input, command, substring]
+				result = [input, command_next, substring]
+				console.log("searched input is " + input)
 				return result
 			}
 			else {
-				return [event]
+				console.log("event is " + event)
+				return [event] //if no command found treats string as input for previous command (if any)
 			}
 		}
 	}
-	return [] //if no command found treats string as input for previous command (if any)
+	console.log("input is undefined")
+	return [event] 
 };
 
 //Separates compound commands from initial input
 function commandParse(array) {
-	if (array[1] == undefined) return //no command found
+	if (array[1] == undefined) {
+		return array //no command found
+		console.log("parse undefined")
+	}	
 	else {
-		console.log("command list is" + command.commands)
-		command = array[1]
+		console.log('parse input ' + array)
+		command_current = array[1]
 		substring = array[2]
-		input = commandFind(substring, command.commands)[0]	
-		commandThread.push(command, input)
-		console.log(commandThread)
+		parsed = commandFind(substring, command_current.commands) 
+		console.log(parsed)
+		input = parsed[0]	
+		commandThread.push(command_current, input)
+		commandParse(parsed)
 	}
 }
 
