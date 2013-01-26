@@ -1,27 +1,47 @@
-//Help Commands
-var Search = new Object();
-Search.str = "Search"
-Search.commands = []
+//Location Commands
 
-var List = new Object();
-List.str = "List"
-List.commands = [Search]
+var Sort = new Object();
+Sort.str = "sort"
+Sort.param = "sort"
+Sort.commands = []
+Sort.special = true
+Sort.dict = {
+	'best match': 0,
+	'highest rated': 1,
+	'distance': 2
+}
 
 // Global Commands
-var Faster = new Object();
-Faster.str = "Faster"
+var Category = new Object();
+Category.str = 'Category'
+Category.param = "category_filter"
+Category.special = true
+Category.commands = [
+	Sort,
+	Location
+]
 
-
-var Help = new Object();
-Help.str = "Help"
-Help.commands = [
-	List,
-	Search
+var Location = new Object();
+Location.str = "location"
+Location.param = "location"
+Location.special = false
+Location.commands = [
+	Category,
+	Sort
+]
+var Search = new Object();
+Search.str = "search"
+Search.param = "term"
+Search.special = false
+Search.commands = [
+	Location,
+	Sort,
+	Category
 ]
 
 var commandList = [
-	Help,
-	Faster
+	Search,
+	Category
 ]
 
 //other variables
@@ -33,8 +53,16 @@ recognition.interimResults = true;
 reset();
 commandFind();
 recognition.onend = reset;
-commandThread = [];
+var guessed_location = '';
+var commandThread = {
+	'category_filter' : 'restaurants',  //set search degaults
+	'location' : guessed_location
+};
+var api_URL = '/yelp/'
+var results = ''
 
+
+//UI logic: Starting and stopping recognition
 
 recognition.onresult = function (event) {
 	var final = '';
@@ -54,7 +82,8 @@ recognition.onresult = function (event) {
 	}
 	final_span.innerHTML = final;
 	interim_span.innerHTML = interim;
-	console.log(commandThread);
+	commandExecute(commandThread)
+	
 }  
 
 function reset() {
@@ -75,9 +104,11 @@ function toggleStartStop() {
 		image_src.src = 'images/mic-animate.gif';
 		final_span.innerHTML = '';
 		interim_span.innerHTML = '';
+		//results_span = '';
 
 	}
 }
+////Command Parsing and execution logic
 
 //Searches input string against list of cammandsand returns array of command + substring
 function commandFind(event, commandList) {	
@@ -89,47 +120,69 @@ function commandFind(event, commandList) {
 				command_next = commandList[i]; //This is an object
 				substring = event.substr(commandIndex+commandList[i].str.length)
 				result = [input, command_next, substring]
-				console.log("searched input is " + input)
 				return result
 			}
-			else {
-				console.log("event is " + event)
-				return [event] //if no command found treats string as input for previous command (if any)
-			}
+			else return [event] //if no command found treats string as input for previous command (if any)
 		}
 	}
-	console.log("input is undefined")
 	return [event] 
 };
 
 //Separates compound commands from initial input
 function commandParse(array) {
-	if (array[1] == undefined) {
-		return array //no command found
-		console.log("parse undefined")
-	}	
+	if (array[1] == undefined) return array //no command found	
 	else {
-		console.log('parse input ' + array)
 		command_current = array[1]
 		substring = array[2]
 		parsed = commandFind(substring, command_current.commands) 
-		console.log(parsed)
-		input = parsed[0]	
-		commandThread.push(command_current, input)
+		input = parsed[0].trim()
+		console.log('pre translated ' + input)
+		input = commandTranslate(command_next, input)
+		console.log('translated' + input)
+		commandThread[command_current.param] = input
 		commandParse(parsed)
 	}
 }
 
-/*executes individual commands
-function commandExecute(array) {
-	for (var i = 0; i < commandThread.length; i++) {
-		command = commandThread[i][0]
-		input = commandThread[i][1]
-		console.log("Executed "+ command " with the value " + input)
-	};
+//executes individual commands
+function commandExecute(query) {
+	 //takes text input and replaces it with API specific 
+	query =  JSON.stringify(query)
+	console.log(query)
+	$.ajax(api_URL + query, {
+		type: 'GET',
+		dataType: 'JSON',
+		success: function(data) { 
+			console.log(data)
+			results = data
+			for (var i = 0; i < Object.keys(results.businesses).length; i++) {
+			results_span.innerHTML += results.businesses[i].name + ' - Rating:'
+			results_span.innerHTML += results.businesses[i].rating + ' stars. <br>'
+			}	
+		},
+    	error  : function()     {console.log('error') }
+	})
+};
 
+function commandTranslate(command, input) {
+	if (command_current.special == true) {
+		if (command.str == 'category') {
+			input = input.replace(/\s+/g, '').toLowerCase()
+			console.log('cleaned input' + input)
+			return input
+		}
+		else {
+			if (input in Sort.dict) {
+				input = Sort.dict[input]
+				console.log(Sort.dict[input])	
+			return input
+		}
+			else return ''
+		}
+	}
+	else return input
 }
-*/
+
 
 //Error and edgecase logic
 
