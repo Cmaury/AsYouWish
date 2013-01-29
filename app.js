@@ -1,5 +1,6 @@
 var express = require('express');
 var app = express();
+var speak = require('./voicesynth')
 var yelp = require("yelp").createClient({
   consumer_key: "63Eg53GxgDQv6ZmfbOcHFw", 
   consumer_secret: "PhHBgCAK3tAmi5xy3N-eZb0ypB4",
@@ -36,6 +37,11 @@ app.get('/yelp/*', function(req, res) {
 		res.send(500, JSON.stringify(error))
 		res.end()
 	}
+})
+
+app.get('/read/*', function(req, res) {
+	var string = req.params[0]
+	speak(string)
 })
 
 app.listen(3000);

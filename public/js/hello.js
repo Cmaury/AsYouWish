@@ -1,4 +1,6 @@
 //Location Commands
+var speak = require("node-speak");
+
 
 var Sort = new Object();
 Sort.str = "sort"

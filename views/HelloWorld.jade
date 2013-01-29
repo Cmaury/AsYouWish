@@ -1,22 +1,24 @@
-
-	
 body
-	div.hero-unit
-		h1 Speech Recognition Demo
-		h2 Command keywords will appear in Bold (hopefully).
-		br
-		button(id='button', onclick='toggleStartStop()').btn.center
-		img(id='image_src' , src='images/mic.gif')
-		p
-			span(id='final_span').text-info
-			span(id='interim_span').muted
-		div
-			h6 
-				span(id='commands_span').warning
-		div
-			span(id='results_span')	
+	div(id='audio')
+		div.hero-unit
+			div#welcome
+				- speak.play('hello world',function(){console.log('completed!')})
+				h1 Speech Recognition Demo
+				h2 Command keywords will appear in Bold (hopefully).
+			br
+			button(id='button', onclick='toggleStartStop()').btn.center
+			img(id='image_src' , src='images/mic.gif')
+			p
+				span(id='final_span').text-info
+				span(id='interim_span').muted
+			div
+				h6 
+					span(id='commands_span').warning
+			div
+				span(id='results_span')	
 
 link(rel='stylesheet', href='css/bootstrap.css')
 script(src='js/hello.js')
+script(src='js/speakClient.js')
 script(src='js/bootstrap.min.js')
 script(src='//ajax.googleapis.com/ajax/libs/jquery/1.9.0/jquery.min.js')
