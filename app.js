@@ -1,14 +1,10 @@
 var express = require('express');
 var app = express();
-var speak = require('./voicesynth')
-var yelp = require("yelp").createClient({
-  consumer_key: "63Eg53GxgDQv6ZmfbOcHFw", 
-  consumer_secret: "PhHBgCAK3tAmi5xy3N-eZb0ypB4",
-  token: "7BLMSkIkBPImpxnDpuOT-28sY0mp_Num",
-  token_secret: "2sgNndyYrJM5aL6X64e8KOHpzW0"
-});
+http  = require("http");
+var speak = require('node-speak')
+var yep = require('yelp')
 
-app.locals({yelp:yelp})
+var audio = "";
 
 app.configure('development', function(){
     app.use(express.static(__dirname + '/public'));
@@ -25,7 +21,7 @@ app.get('/yelp/*', function(req, res) {
 	query = JSON.parse(query)
 	console.log(query)
 	console.log(typeof(query))
-	if (Object.keys(query).length > 2) {
+	if (Object.keys(query).length > 3) {
 		console.log('query is an object')
 		yelp.search(query, function(error, data) {
 		error = error
@@ -40,8 +36,15 @@ app.get('/yelp/*', function(req, res) {
 })
 
 app.get('/read/*', function(req, res) {
-	var string = req.params[0]
-	speak(string)
+	var string = req.query.string
+	var speed = parseInt(req.query.speed)
+	console.log('server received: ' + string + speed)
+	speak(string, /*{'speed': speed},*/ {
+		callback: function(src){
+		audio = src
+	}})
+	res.send(200, audio)
+	res.end()	
 })
 
 app.listen(3000);
