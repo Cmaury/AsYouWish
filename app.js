@@ -2,7 +2,7 @@ var express = require('express');
 var app = express();
 http  = require("http");
 var speak = require('node-speak')
-var yep = require('yelp')
+var yelp = require('./yelp_config.js').yelpKeys
 
 var audio = "";
 
