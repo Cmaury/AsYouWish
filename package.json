@@ -1,0 +1,12 @@
+{
+  "name": "AsYouWish",
+  "description": "Voice Control demos using Web Speech API and Speapk.js.",
+  "version": "0.0.1",
+  "private": true,
+  "dependencies": {
+    "express": "3.x",
+    "jade": "0.28.x",
+    "yelp": "0.1.x",
+    "node-speak": "0.0.x"
+  }
+}
