@@ -90,7 +90,13 @@ var Category = {
 var Location = {
 	'str': 'location',
 	'param': 'location',
-	'action': '',
+	'action': function (input) {
+		console.log('location1 '+ input)
+		input = input.replace(/s /,'')
+		console.log('location2 '+ input)
+		delete commandThread['ll']
+		return input
+	},
 	'commands': [
 		Category,
 		Sort,
@@ -99,7 +105,7 @@ var Location = {
 }
 var Search = {
 	'str': 'search',
-	'param': 'search',
+	'param': 'term',
 	'action': '',
 	'commands': [
 		Category,
@@ -157,11 +163,14 @@ reset();
 commandFind();
 recognition.onend = reset;
 var guessed_location = '';
-var commandThread = {
+var commandThreadDefault = {
 	'category_filter' : 'restaurants',  //set search degaults
 	'location' : guessed_location,
-	'limit' : 5	
+	'limit' : 5	,
+	'radius_filter': 500
 };
+var commandThread = commandThreadDefault
+var locationString = ''
 var api_URL = '/yelp/'
 var results = ''
 var speed = 175
@@ -170,6 +179,23 @@ var speed = 175
 //UI logic: Starting and stopping recognition
 
 window.onload = voiceSynth(welcome.innerHTML)
+window.onload = navigator.geolocation.getCurrentPosition(setLocation, errorLocation)
+
+function setLocation(input) {
+	var latitude = input.coords.latitude
+	var longitude = input.coords.longitude
+	var accuracy = input.coords.accuracy
+	var locationString = latitude +','+longitude
+	commandThread['ll'] = locationString+','+accuracy
+	commandThread['cll'] = locationString
+}
+
+function errorLocation(input) {
+	console.log('Error finding location')
+	voiceSynth('We could not find your location. Please say your location when submitting your search. For example "search bars location san francisco."')
+}
+
+
 
 recognition.onresult = function (event) {
 	var final = '';
@@ -183,7 +209,7 @@ recognition.onresult = function (event) {
 		}
 		else {
 			interim += event.results[i][0].transcript;
-
+			audio.pause()
 		} 
 
 	}
@@ -197,11 +223,7 @@ function reset() {
 	recognizing = false;
 	button.innerHTML = 'Click to Speak';
 	image_src.src = 'images/mic.gif';
-	commandThread = {
-	'category_filter' : 'restaurants',  //set search degaults
-	'location' : guessed_location,
-	'limit' : 5	
-};
+	commandThread = commandThreadDefault
 }
 
 function toggleStartStop() {
@@ -262,8 +284,12 @@ function commandParse(array) {
 
 //executes individual commands
 function commandExecute(query) {
-	 //takes text input and replaces it with API specific 
-	if (typeof(query) == 'object' && Object.keys(query).length > 3) {	
+	//Remove empty params in Yelp Query
+	for (var i = 0; i < Object.keys(query).length; i++) {
+	 	if(commandThread[Object.keys(query)[i]] == "") {
+			delete commandThread[Object.keys(query)[i]]
+		}}
+	if (typeof(query) == 'object' && Object.keys(query).length > 4) {	
 		console.log(Object.keys(query)) 
 		query =  JSON.stringify(query)
 		$.ajax(api_URL + query, {
@@ -276,7 +302,8 @@ function commandExecute(query) {
 			results_span.innerHTML += results.businesses[i].name + ' - Rating:'
 			results_span.innerHTML += results.businesses[i].rating + ' stars. \n'
 			}
-			voiceSynth(results_span.innerHTML)	
+			voiceSynth(results_span.innerHTML)
+			commandThread = commandThreadDefault	
 		},
     	error: function(xhr, ajaxOptions, thrownError) {
 			console.log(xhr)
@@ -324,6 +351,10 @@ function commandTranslate(command, input) {
 	if (command.str == 'help') {
 		console.log('help')
 		Help.action(input)
+	}
+	if (command.str == 'location') {
+		console.log('location action called')
+		return Location.action(input)
 	}				
 	else {
 		return input

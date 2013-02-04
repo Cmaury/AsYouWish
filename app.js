@@ -20,9 +20,9 @@ app.get('/yelp/*', function(req, res) {
 	var query = req.params[0]
 	query = JSON.parse(query)
 	console.log(query)
-	console.log(typeof(query))
-	if (Object.keys(query).length > 3) {
-		console.log('query is an object')
+	if (query.ll) {delete query['cll']}
+	if (Object.keys(query).length > 4) {
+		console.log(query)
 		yelp.search(query, function(error, data) {
 		error = error
 		res.send(200, JSON.stringify(data))
