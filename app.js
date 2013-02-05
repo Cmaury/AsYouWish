@@ -42,9 +42,9 @@ app.get('/read/*', function(req, res) {
 	speak(string, /*{'speed': speed},*/ {
 		callback: function(src){
 		audio = src
+		res.send(200, audio)
+		res.end()	
 	}})
-	res.send(200, audio)
-	res.end()	
 })
 
 app.listen(3000);

@@ -121,12 +121,9 @@ var Help = {
 	'list': [],
 	'commands': [],
 	'action': function() {
-		var helplist = ''
-		for (var i = 0; i < Help.list.length; i++) {
-		helplist += Help.list[i]
-		}
-		voiceSynth(helplist)
-		},
+		for (var i = 0; i < Help.list.length;i++) {
+			setTimeout(voiceSynth(Help.list[i]), 2000)
+		}},
 	'help': 'Help - List all currently available commands.  '
 }
 
@@ -174,11 +171,14 @@ var locationString = ''
 var api_URL = '/yelp/'
 var results = ''
 var speed = 175
+function wait(time) {
+	setTimeout(console.log('waiting...'), time)	
+} 
 
 
 //UI logic: Starting and stopping recognition
 
-window.onload = voiceSynth(welcome.innerHTML)
+//window.onload = voiceSynth(welcome.innerHTML)
 window.onload = navigator.geolocation.getCurrentPosition(setLocation, errorLocation)
 
 function setLocation(input) {
@@ -284,7 +284,7 @@ function commandParse(array) {
 
 //executes individual commands
 function commandExecute(query) {
-	//Remove empty params in Yelp Query
+	//Remove empty params in Query
 	for (var i = 0; i < Object.keys(query).length; i++) {
 	 	if(commandThread[Object.keys(query)[i]] == "") {
 			delete commandThread[Object.keys(query)[i]]
@@ -298,11 +298,13 @@ function commandExecute(query) {
 		success: function(data) { 
 			console.log(data)
 			results = data
+			voiceSynth('There are '+ results.total + ' results for ' + commandThread.term + '.')
 			for (var i = 0; i < Object.keys(results.businesses).length; i++) {
-			results_span.innerHTML += results.businesses[i].name + ' - Rating:'
-			results_span.innerHTML += results.businesses[i].rating + ' stars. \n'
+			name = results.businesses[i].name + ' - Rating - '
+			rating = results.businesses[i].rating + ' stars. '
+			//neighborhood = results.business[i].location.neighborhoods[0] + '.' :neighborhoods is undefined for some reason
+			voiceSynth(name + rating /*+ neighborhood)*/)
 			}
-			voiceSynth(results_span.innerHTML)
 			commandThread = commandThreadDefault	
 		},
     	error: function(xhr, ajaxOptions, thrownError) {
@@ -368,7 +370,7 @@ function voiceSynth (string) {
 	$.ajax('read/?string=' + string + '&speed=' + speed, {
 		type: 'GET',
 		success: function(src) {
-			audio.setAttribute('src', src)
+			audio.setAttribute('src', src)	
 			audio.play()
 		},
 		error: function(xhr, ajaxOptions, thrownError) {
