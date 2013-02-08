@@ -4,7 +4,8 @@ var Start = {
 	'param' : 'start',
 	'action': function(input) {
 		audio.play()
-		return
+		voiceCleanup()
+		return ''
 	},
 	'commands': [
 	],
@@ -15,14 +16,27 @@ var Stop = {
 	'str': 'stop',
 	'param' : 'stop',
 	'action': function(input) {
-		audio.pause()
-		console.log("audio stopped?")
-		return
+		audioPause()
+		return ''
 	 },
 	'commands': [
 	],
 	'help': 'Stop - Stop reading a section of text.  '
 }
+
+var More = {
+	'str': 'more',
+	'param' : 'more',
+	'action': function(input) {
+		voiceQueue = []
+		audio.setAttribute('src', '')
+		return ''
+	 },
+	'commands': [
+	],
+	'help': 'More - Hear more information about the current result.  '
+}
+
 
 var Faster = {
 	'str': 'faster',
@@ -81,10 +95,8 @@ var Category = {
 	'param': 'category_filter',
 	'action': '',
 	'commands': [
-		Sort,
-		Location,
 	],
-	'help': 'Category - Specify which type of business you would like to search for. The defualt category is Restaurants.  '
+	'help': 'Category - Specify which type of business you would like to search for. The default category is Restaurants.  '
 }
 
 var Location = {
@@ -98,19 +110,17 @@ var Location = {
 		return input
 	},
 	'commands': [
-		Category,
-		Sort,
 	],
 	'help': 'Location - Specify which area you would like to search within. Example values: Philadelphia, Mission San Francisco, East Village. '
 }
 var Search = {
 	'str': 'search',
 	'param': 'term',
-	'action': '',
+	'action': function(input) {
+		audio.setAttribute('src', '')
+		return input
+	},
 	'commands': [
-		Category,
-		Location,
-		Sort
 	],
 	'help': 'Search - Specify what you would like to search for. Example values: Dinner, Chinese, McDonald\'s. '
 }
@@ -122,7 +132,8 @@ var Help = {
 	'commands': [],
 	'action': function() {
 		for (var i = 0; i < Help.list.length;i++) {
-			setTimeout(voiceSynth(Help.list[i]), 2000)
+			//setTimeout(voiceSynth(Help.list[i],null), 2000)
+			voiceSynth(Help.list[i],null)
 		}},
 	'help': 'Help - List all currently available commands.  '
 }
@@ -134,6 +145,7 @@ var commandList = {
 		Category,
 		Location,
 		Sort,
+		More,
 		//yelpCommands - Need to separate out commands coming in from individual app
 		Start,
 		Stop,
@@ -143,11 +155,6 @@ var commandList = {
 		Help
 	]
 }
-
-for (var i = 0; i < commandList.commands.length; i++) {
-	commandList.commands[i].commands.push(commandList)
-	Help.list.push(commandList.commands[i].help)
-};
 
 
 //other variables
@@ -171,16 +178,24 @@ var locationString = ''
 var api_URL = '/yelp/'
 var results = ''
 var speed = 175
-function wait(time) {
-	setTimeout(console.log('waiting...'), time)	
-} 
+var voiceBusy = false
+var voiceQueue = []
+var voiceCursor = null
+var voiceInt
 
 
-//UI logic: Starting and stopping recognition
+//Initial set up
+for (var i = 0; i < commandList.commands.length; i++) {
+	commandList.commands[i]['commands'] = commandList.commands[i]['commands'].concat(commandList.commands)
+	Help.list.push(commandList.commands[i].help)
+};
 
-//window.onload = voiceSynth(welcome.innerHTML)
+//window.onload = voiceSynth(welcome.innerHTML, null)
 window.onload = navigator.geolocation.getCurrentPosition(setLocation, errorLocation)
 
+
+
+//logic for setting user location
 function setLocation(input) {
 	var latitude = input.coords.latitude
 	var longitude = input.coords.longitude
@@ -192,11 +207,11 @@ function setLocation(input) {
 
 function errorLocation(input) {
 	console.log('Error finding location')
-	voiceSynth('We could not find your location. Please say your location when submitting your search. For example "search bars location san francisco."')
+	voiceSynth('We could not find your location. Please say your location when submitting your search. For example "search bars location san francisco."',null)
 }
 
 
-
+//UI logic: Starting and stopping recognition
 recognition.onresult = function (event) {
 	var final = '';
 	var interim = '';
@@ -205,11 +220,12 @@ recognition.onresult = function (event) {
 			final += event.results[i][0].transcript;
 			commands = commandFind(final, commandList.commands);
 			commandParse(commands);
-
+			event.results.length = 0
 		}
 		else {
 			interim += event.results[i][0].transcript;
-			audio.pause()
+			audioPause()
+
 		} 
 
 	}
@@ -238,25 +254,21 @@ function toggleStartStop() {
 		image_src.src = 'images/mic-animate.gif';
 		final_span.innerHTML = '';
 		interim_span.innerHTML = '';
-		//results_span = '';
 
 	}
 }
 ////Command Parsing and execution logic
 
 //Searches input string against list of cammandsand returns array of command + substring
-function commandFind(string, list) {	
-	console.log(list)
+function commandFind(string, list) {
+	//console.log("did it clean up "+ input + ', '+ command_current+ ', ' + command_next+ ', ' + substring+ ', ' +result)	
 	if (typeof(string) != "undefined"  && typeof(list) != "undefined") {
 		for (var i = 0; i < list.length; i++) {
-			console.log(list[i])
 			commandIndex = string.search(list[i].str.toLowerCase())
 			if (commandIndex != -1) {
 				input = string.substr(0,commandIndex)
 				command_next = list[i]; //This is an object
-				console.log('command  next is '+typeof(command_next))				
 				substring = string.substr(commandIndex+list[i].str.length)
-				console.log('substring '+substring)
 				result = [input, command_next, substring]
 				console.log('result '+result)
 				return result
@@ -271,7 +283,6 @@ function commandFind(string, list) {
 function commandParse(array) {
 	if (array[1] == undefined) {console.log('no command' + array)}	
 	else {
-		console.log('parsed '+ array)
 		command_current = array[1]
 		substring = array[2]
 		parsed = commandFind(substring, command_current.commands) 
@@ -289,23 +300,23 @@ function commandExecute(query) {
 	 	if(commandThread[Object.keys(query)[i]] == "") {
 			delete commandThread[Object.keys(query)[i]]
 		}}
-	if (typeof(query) == 'object' && Object.keys(query).length > 4) {	
+	if (Object.keys(query).length > 4 && query.term) {	
 		console.log(Object.keys(query)) 
 		query =  JSON.stringify(query)
 		$.ajax(api_URL + query, {
 		type: 'GET',
 		dataType: 'JSON',
 		success: function(data) { 
+			commandThread = commandThreadDefault
 			console.log(data)
 			results = data
-			voiceSynth('There are '+ results.total + ' results for ' + commandThread.term + '.')
+			voiceSynth('There are '+ results.total + ' results for ' + commandThread.term + '.', null)
 			for (var i = 0; i < Object.keys(results.businesses).length; i++) {
-			name = results.businesses[i].name + ' - Rating - '
-			rating = results.businesses[i].rating + ' stars. '
-			//neighborhood = results.business[i].location.neighborhoods[0] + '.' :neighborhoods is undefined for some reason
-			voiceSynth(name + rating /*+ neighborhood)*/)
+				name = results.businesses[i].name + ' - Rating - '
+				rating = results.businesses[i].rating + ' stars. '
+				//neighborhood = results.business[i].location.neighborhoods[0] + '.' :neighborhoods is undefined for some reason
+				voiceSynth(name + rating, results.businesses[i].name)
 			}
-			commandThread = commandThreadDefault	
 		},
     	error: function(xhr, ajaxOptions, thrownError) {
 			console.log(xhr)
@@ -317,6 +328,56 @@ function commandExecute(query) {
 	
 };
 
+function voiceSynth (string, name) {
+	if(voiceQueue.indexOf(string)== -1){
+		voiceQueue.push(string)	
+		voiceQueue.push(name)
+	}		
+	  for (var i = 0; i < voiceQueue.length/2; i++) {
+		if (voiceBusy == false && audio.paused == true) {	
+			voiceCall.call(undefined, voiceQueue.shift(),voiceQueue.shift())
+		}
+	}
+}
+function voiceCall (string, name) {
+	voiceBusy = true
+	console.log('synth called on ' + string)
+	$.ajax('read/?string=' + string + '&speed=' + speed, {
+		type: 'GET',
+		success: function(src) {
+			audio.setAttribute('src', src)	
+			audio.play()
+			voiceBusy = false
+			voiceCursor = name
+			//voiceCleanup()	
+		},
+		error: function(xhr, ajaxOptions, thrownError) {
+			console.log(xhr)
+			console.log(ajaxOptions)
+			console.log(thrownError)
+			}
+	})
+}
+
+//check for unread items
+function voiceCleanup() {
+		while (voiceQueue.length > 1) {
+		voiceSynth.call(undefined, voiceQueue.shift(),voiceQueue.shift())
+	}
+	/*var voiceInt = setInterval(function() {
+		if (voiceQueue.length == 0) {clearInterval(voiceInt)}
+		if (voiceQueue.length > 1 && audio.paused == true) {
+			console.log('this should not fire.')
+			voiceSynth.call(undefined, voiceQueue.shift(),voiceQueue.shift())}
+},50) */
+}
+
+//voiceCleanup()
+
+function audioPause() {
+	audio.pause()
+	clearInterval(voiceInt)
+}
 
 //input translation should happen as part of the command definition
 //ex. Sort.translate('distance') returns 2
@@ -357,28 +418,19 @@ function commandTranslate(command, input) {
 	if (command.str == 'location') {
 		console.log('location action called')
 		return Location.action(input)
-	}				
+	}
+	if (command.str == 'more') {
+		console.log('more action called')
+		return More.action(input)
+	}
+	if (command.str == 'search') {
+		console.log('search action called')
+		return Search.action(input)
+	}						
 	else {
 		return input
 	}
 
-}
-
-
-function voiceSynth (string) {
-	console.log('synth called on ' + string)
-	$.ajax('read/?string=' + string + '&speed=' + speed, {
-		type: 'GET',
-		success: function(src) {
-			audio.setAttribute('src', src)	
-			audio.play()
-		},
-		error: function(xhr, ajaxOptions, thrownError) {
-			console.log(xhr)
-			console.log(ajaxOptions)
-			console.log(thrownError)
-			}
-	})
 }
 
 
