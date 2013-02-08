@@ -333,7 +333,7 @@ function voiceSynth (string, name) {
 		voiceQueue.push(string)	
 		voiceQueue.push(name)
 	}		
-	  for (var i = 0; i < voiceQueue.length/2; i++) {
+	while (voiceQueue.length > 1) {
 		if (voiceBusy == false && audio.paused == true) {	
 			voiceCall.call(undefined, voiceQueue.shift(),voiceQueue.shift())
 		}
