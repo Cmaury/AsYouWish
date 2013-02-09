@@ -4,6 +4,7 @@ var Start = {
 	'param' : 'start',
 	'action': function(input) {
 		audio.play()
+		voiceBusy = true
 		voiceCleanup()
 		return ''
 	},
@@ -28,6 +29,7 @@ var More = {
 	'str': 'more',
 	'param' : 'more',
 	'action': function(input) {
+		commandThread = commandThreadDefault
 		voiceQueue = []
 		audio.setAttribute('src', '')
 		return ''
@@ -131,6 +133,7 @@ var Help = {
 	'list': [],
 	'commands': [],
 	'action': function() {
+		voiceQueue = []
 		for (var i = 0; i < Help.list.length;i++) {
 			//setTimeout(voiceSynth(Help.list[i],null), 2000)
 			voiceSynth(Help.list[i],null)
@@ -181,7 +184,7 @@ var speed = 175
 var voiceBusy = false
 var voiceQueue = []
 var voiceCursor = null
-var voiceInt
+var ajaxBusy
 
 
 //Initial set up
@@ -300,7 +303,7 @@ function commandExecute(query) {
 	 	if(commandThread[Object.keys(query)[i]] == "") {
 			delete commandThread[Object.keys(query)[i]]
 		}}
-	if (Object.keys(query).length > 4 && query.term) {	
+	if (Object.keys(query).length > 4 && query.term && voiceCursor == null) {	
 		console.log(Object.keys(query)) 
 		query =  JSON.stringify(query)
 		$.ajax(api_URL + query, {
@@ -332,13 +335,10 @@ function voiceSynth (string, name) {
 	if(voiceQueue.indexOf(string)== -1){
 		voiceQueue.push(string)	
 		voiceQueue.push(name)
-	}		
-	while (voiceQueue.length > 1) {
-		if (voiceBusy == false && audio.paused == true) {	
-			voiceCall.call(undefined, voiceQueue.shift(),voiceQueue.shift())
-		}
-	}
+	}	
+	voiceCleanup()	
 }
+
 function voiceCall (string, name) {
 	voiceBusy = true
 	console.log('synth called on ' + string)
@@ -346,37 +346,41 @@ function voiceCall (string, name) {
 		type: 'GET',
 		success: function(src) {
 			audio.setAttribute('src', src)	
-			audio.play()
-			voiceBusy = false
+			audio.play()		
+			ajaxBusy = false
 			voiceCursor = name
-			//voiceCleanup()	
+			voiceCleanup()	
 		},
 		error: function(xhr, ajaxOptions, thrownError) {
 			console.log(xhr)
 			console.log(ajaxOptions)
 			console.log(thrownError)
+			ajaxBusy = false
+			voiceCleanup()
 			}
 	})
 }
 
+function handleAudioEnded() {
+	console.log('audio has ended')
+	voiceBusy = false
+	voiceCleanup()
+}
+
+audio.addEventListener('ended', handleAudioEnded)
+
 //check for unread items
 function voiceCleanup() {
-		while (voiceQueue.length > 1) {
-		voiceSynth.call(undefined, voiceQueue.shift(),voiceQueue.shift())
+	if (voiceQueue.length > 1 && !voiceBusy) {	
+		voiceCall(voiceQueue.shift(),voiceQueue.shift())
 	}
-	/*var voiceInt = setInterval(function() {
-		if (voiceQueue.length == 0) {clearInterval(voiceInt)}
-		if (voiceQueue.length > 1 && audio.paused == true) {
-			console.log('this should not fire.')
-			voiceSynth.call(undefined, voiceQueue.shift(),voiceQueue.shift())}
-},50) */
 }
 
 //voiceCleanup()
 
 function audioPause() {
 	audio.pause()
-	clearInterval(voiceInt)
+	voiceBusy = false
 }
 
 //input translation should happen as part of the command definition
