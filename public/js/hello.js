@@ -31,7 +31,13 @@ var More = {
 	'action': function(input) {
 		commandThread = commandThreadDefault
 		voiceQueue = []
+		console.log('cursor is ' +voiceCursor.name)
 		audio.setAttribute('src', '')
+		voiceSynth('One moment please.', voiceCursor)
+		more_text = yelpMore(voiceCursor)
+		for (var i = 0; i < yelpMore.length; i++) {
+			voiceSynth(more_text, voiceCursor)
+		}
 		return ''
 	 },
 	'commands': [
@@ -106,7 +112,7 @@ var Location = {
 	'param': 'location',
 	'action': function (input) {
 		console.log('location1 '+ input)
-		input = input.replace(/s /,'')
+		input = input.replace(/s /,'') //fix WSAPI's tendency to make location plural
 		console.log('location2 '+ input)
 		delete commandThread['ll']
 		return input
@@ -186,6 +192,19 @@ var voiceQueue = []
 var voiceCursor = null
 var ajaxBusy
 
+
+//defines which sub attributes to read for the yelp result set.
+function yelpMore(voiceCursor) {
+	sentence1 = voiceCursor.name + ' is a ' + voiceCursor.categories[0][0] + ' '+  commandThread.category_filter + '.  '
+	sentence2 = 'Located in the '+ voiceCursor.location.neighborhoods[0] + ' area with a rating of ' +	voiceCursor.rating + ' stars from ' + voiceCursor.review_count + ' reviewers.  '
+	sentence3 = voiceCursor.name + 'is described as quote ' + voiceCursor.snippet_text + '.  '
+	var phoneStr
+	for (var i = 0; i < voiceCursor.phone.length; i++) {
+		phoneStr += voiceCursor.phone[i] + ' '	
+	}
+	sentence4 = 'For more information, call - ' + phoneStr.slice(1)
+	return [sentence1,sentence2,sentence3,sentence4]
+}
 
 //Initial set up
 for (var i = 0; i < commandList.commands.length; i++) {
@@ -318,7 +337,7 @@ function commandExecute(query) {
 				name = results.businesses[i].name + ' - Rating - '
 				rating = results.businesses[i].rating + ' stars. '
 				//neighborhood = results.business[i].location.neighborhoods[0] + '.' :neighborhoods is undefined for some reason
-				voiceSynth(name + rating, results.businesses[i].name)
+				voiceSynth(name + rating, results.businesses[i])
 			}
 		},
     	error: function(xhr, ajaxOptions, thrownError) {
