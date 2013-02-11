@@ -1,0 +1,29 @@
+#upgrade {
+	display: none;
+	margin-top: 25px;
+}
+
+#image_src {
+	position: relative;
+	top: 21px;
+}
+
+ #results {
+    font-size: 22px;
+    font-weight: bold;
+    border: 1px solid #ddd;
+    margin-top: 15px;
+    padding-top: 5px;
+    padding-left: 8px;
+    text-align: left;
+    min-height: 150px;
+    background: white;
+  }
+
+  .response {
+  	margin-top: 50px;
+  }
+
+  h4 {
+  	color: rgb(129, 116, 116);
+  }
