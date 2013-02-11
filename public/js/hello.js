@@ -164,18 +164,17 @@ var commandList = {
 		Help
 	]
 }
-
+var voiceQueue = []
 
 //Error and edgecase logic
 if (!('webkitSpeechRecognition' in window)) {
-	button.style.visibility = 'hidden'
-	image_src.style.visibility = 'hidden'
-	//results.style.visibility = 'hidden'
-	upgrade.style.visibility = 'visible'
+	button.style.display = 'none'
+	image_src.style.display = 'none'
+	upgrade.style.display = 'block'
 	upgrade_warning.innerHTML = 'This Demo requires Chrome version 25 or higher. Please switch browsers before continuing.'
 }
 else {
-	//window.onload = voiceSynth(welcome.innerHTML, null)
+	window.onload = voiceSynth(welcome.innerHTML, null)
 	window.onload = navigator.geolocation.getCurrentPosition(setLocation, errorLocation)
 	var recognition = new webkitSpeechRecognition();
 	recognition.continuous = true;
@@ -201,7 +200,6 @@ var api_URL = '/yelp/'
 var results = ''
 var speed = 175
 var voiceBusy = false
-var voiceQueue = []
 var voiceCursor = null
 var ajaxBusy
 
@@ -393,6 +391,7 @@ function voiceCall (string, name) {
 
 function handleAudioEnded() {
 	console.log('audio has ended')
+	results_span.innerHTML = ''
 	voiceBusy = false
 	voiceCleanup()
 }
@@ -401,8 +400,11 @@ audio.addEventListener('ended', handleAudioEnded)
 
 //check for unread items
 function voiceCleanup() {
-	if (voiceQueue.length > 1 && !voiceBusy) {	
-		voiceCall(voiceQueue.shift(),voiceQueue.shift())
+	if (voiceQueue.length > 1 && !voiceBusy) {
+	string = voiceQueue.shift()
+	cursor = voiceQueue.shift()	
+		voiceCall(string,cursor)
+		results_span.innerHTML += string
 	}
 }
 

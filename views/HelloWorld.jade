@@ -8,39 +8,42 @@ body
 		.span12
 	div.row
 		.span8.offset2.well
-			div#upgrade.alert(style='visibility:hidden')
-				button(type='button', class='close', data-dismess='alert')&times;
-				span(id='upgrade_warning')
-			div#header
-				h2 
-					span(id='welcome') Welcome to the Speech interface for Yelp.com. Click the button below to get started.
+			div(id='header', style='text-align: center')
+				h2(id='welcome')
+					| Welcome to the Speech interface for Yelp.com. 
+					| Click the button below to get started.
 				br	
-				#Demo-area.span7
-					#examples.pull-left
+			#Demo-area.span7
+				#examples.pull-left
+					ul.nav.nav-list
+						li(class='nav-header') Example Queries
+						li 'Search Pizza'
+						li 'Search pubs Location China Town Category bars'
+				
+				#commands.pull-right
+					#commands-left.pull-left
 						ul.nav.nav-list
-							li(class='nav-header') Example Queries
-							li 'Search Pizza'
-							li 'Search pubs Location China Town Category bars'
-					
-					#commands.pull-right
-						#commands-left.pull-left
-							ul.nav.nav-list
-								li(class='nav-header') Commands
-							ul.nav.nav-list
-								li Search
-								li Category
-								li Location
-								li Sort
-						#commands-right.pull-right		
-							br#list-span
-							ul.nav.nav-list
-								li More
-								li Start
-								li Stop
-								li Help		 
-				br
+							li(class='nav-header') Commands
+						ul.nav.nav-list
+							li Search
+							li Category
+							li Location
+							li Sort
+					#commands-right.pull-right		
+						br#list-span
+						ul.nav.nav-list
+							li More
+							li Start
+							li Stop
+							li Help		 
+			br
+			br
 			.row
-				.span3.offset3(style='height:50px; display:block')	
+				.span8
+					div#upgrade.alert
+						button(type='button', class='close', data-dismess='alert')&times;
+						span(id='upgrade_warning')
+				.span3.offset3
 					button(id='button', onclick='toggleStartStop()').btn.center
 					img(id='image_src', class='gif' , src='images/mic.gif', alt='click to get started.')
 			br
@@ -52,7 +55,8 @@ body
 								span(id='final_span') 
 								span(id='interim_span')
 					.response
-						h4 Response:				
+						h4 Response:
+							p				
 								span(id='results_span')	
 
 script(src='js/hello.js')
