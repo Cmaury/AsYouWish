@@ -166,12 +166,25 @@ var commandList = {
 }
 
 
+//Error and edgecase logic
+if (!('webkitSpeechRecognition' in window)) {
+	button.style.visibility = 'hidden'
+	image_src.style.visibility = 'hidden'
+	//results.style.visibility = 'hidden'
+	upgrade.style.visibility = 'visible'
+	upgrade_warning.innerHTML = 'This Demo requires Chrome version 25 or higher. Please switch browsers before continuing.'
+}
+else {
+	//window.onload = voiceSynth(welcome.innerHTML, null)
+	window.onload = navigator.geolocation.getCurrentPosition(setLocation, errorLocation)
+	var recognition = new webkitSpeechRecognition();
+	recognition.continuous = true;
+	recognition.interimResults = true;	
+}
+
 //other variables
 var commands = '';
 var recognizing;
-var recognition = new webkitSpeechRecognition();
-recognition.continuous = true;
-recognition.interimResults = true;
 reset();
 commandFind();
 recognition.onend = reset;
@@ -212,8 +225,6 @@ for (var i = 0; i < commandList.commands.length; i++) {
 	Help.list.push(commandList.commands[i].help)
 };
 
-//window.onload = voiceSynth(welcome.innerHTML, null)
-window.onload = navigator.geolocation.getCurrentPosition(setLocation, errorLocation)
 
 
 
@@ -454,11 +465,4 @@ function commandTranslate(command, input) {
 		return input
 	}
 
-}
-
-
-//Error and edgecase logic
-
-if (!('webkitSpeechRecognition' in window)) {
-	alert('This Demo requires Chrome version 25 or higher. Please switch browsers before continuing.')
 }
