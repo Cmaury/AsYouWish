@@ -202,6 +202,7 @@ var speed = 175
 var voiceBusy = false
 var voiceCursor = null
 var ajaxBusy
+var previousAudio
 
 
 //defines which sub attributes to read for the yelp result set.
@@ -391,8 +392,10 @@ function voiceCall (string, name) {
 
 function handleAudioEnded() {
 	console.log('audio has ended')
+	previousAudio = audio.getAttribute('src')
 	results_span.innerHTML = ''
 	voiceBusy = false
+	playTone('morse.wav')
 	voiceCleanup()
 }
 
@@ -401,10 +404,11 @@ audio.addEventListener('ended', handleAudioEnded)
 //check for unread items
 function voiceCleanup() {
 	if (voiceQueue.length > 1 && !voiceBusy) {
-	string = voiceQueue.shift()
-	cursor = voiceQueue.shift()	
+		string = voiceQueue.shift()
+		cursor = voiceQueue.shift()	
 		voiceCall(string,cursor)
 		results_span.innerHTML += string
+
 	}
 }
 
@@ -413,6 +417,14 @@ function voiceCleanup() {
 function audioPause() {
 	audio.pause()
 	voiceBusy = false
+}
+
+function playTone(tone) {
+	if (voiceQueue.length==0 && previousAudio != tone) {
+		console.log('tone played')
+		audio.setAttribute('src', tone)
+		audio.play()
+	}
 }
 
 //input translation should happen as part of the command definition
