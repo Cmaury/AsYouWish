@@ -2,16 +2,16 @@
 var Start = {
 	'str': 'start',
 	'param' : 'start',
-	'action': function(input) {
-		audio.play()
-		voiceBusy = true
-		voiceCleanup()
+	'action': function (input) {
+		audio.play();
+		voiceBusy = true;
+		voiceCleanup();
 		return ''
 	},
 	'commands': [
 	],
 	'help': 'Start - Begin reading a section of text.  '
-}
+};
 
 var Stop = {
 	'str': 'stop',
@@ -111,9 +111,7 @@ var Location = {
 	'str': 'location',
 	'param': 'location',
 	'action': function (input) {
-		console.log('location1 '+ input)
 		input = input.replace(/s /,'') //fix WSAPI's tendency to make location plural
-		console.log('location2 '+ input)
 		delete commandThread['ll']
 		return input
 	},
@@ -174,7 +172,7 @@ if (!('webkitSpeechRecognition' in window)) {
 	upgrade_warning.innerHTML = 'This Demo requires Chrome version 25 or higher. Please switch browsers before continuing.'
 }
 else {
-	window.onload = voiceSynth(welcome.innerHTML, null)
+	//window.onload = voiceSynth(welcome.innerHTML, null)
 	window.onload = navigator.geolocation.getCurrentPosition(setLocation, errorLocation)
 	var recognition = new webkitSpeechRecognition();
 	recognition.continuous = true;
@@ -249,6 +247,7 @@ recognition.onresult = function (event) {
 	var interim = '';
 	for (var i = 0; i < event.results.length; i++) {
 		if (event.results[i].isFinal) {
+			console.log("final"+ JSON.stringify(event.results))
 			final += event.results[i][0].transcript;
 			commands = commandFind(final, commandList.commands);
 			commandParse(commands);
@@ -256,8 +255,7 @@ recognition.onresult = function (event) {
 		}
 		else {
 			interim += event.results[i][0].transcript;
-			audioPause()
-
+			console.log("interim"+ JSON.stringify(event.results))
 		} 
 
 	}
@@ -298,6 +296,7 @@ function commandFind(string, list) {
 		for (var i = 0; i < list.length; i++) {
 			commandIndex = string.search(list[i].str.toLowerCase())
 			if (commandIndex != -1) {
+				//audioPause()
 				input = string.substr(0,commandIndex)
 				command_next = list[i]; //This is an object
 				substring = string.substr(commandIndex+list[i].str.length)
@@ -333,7 +332,8 @@ function commandExecute(query) {
 			delete commandThread[Object.keys(query)[i]]
 		}}
 	if (Object.keys(query).length > 4 && query.term && voiceCursor == null) {	
-		console.log(Object.keys(query)) 
+		console.log("keys " + Object.keys(query))
+		console.log("query" + query) 
 		query =  JSON.stringify(query)
 		$.ajax(api_URL + query, {
 		type: 'GET',
@@ -344,7 +344,7 @@ function commandExecute(query) {
 			results = data
 			voiceSynth('There are '+ results.total + ' results for ' + commandThread.term + '.', null)
 			for (var i = 0; i < Object.keys(results.businesses).length; i++) {
-				name = results.businesses[i].name + ' - Rating - '
+				name = results.businesses[i].name + '	 - '
 				rating = results.businesses[i].rating + ' stars. '
 				//neighborhood = results.business[i].location.neighborhoods[0] + '.' :neighborhoods is undefined for some reason
 				voiceSynth(name + rating, results.businesses[i])
@@ -356,6 +356,7 @@ function commandExecute(query) {
 			console.log(thrownError)
 			}
 		})
+		//commandThread = commandThreadDefault
 	};
 	
 };
@@ -395,7 +396,6 @@ function handleAudioEnded() {
 	previousAudio = audio.getAttribute('src')
 	results_span.innerHTML = ''
 	voiceBusy = false
-	playTone('morse.wav')
 	voiceCleanup()
 }
 
@@ -411,8 +411,6 @@ function voiceCleanup() {
 
 	}
 }
-
-//voiceCleanup()
 
 function audioPause() {
 	audio.pause()
