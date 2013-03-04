@@ -247,7 +247,6 @@ recognition.onresult = function (event) {
 	var interim = '';
 	for (var i = 0; i < event.results.length; i++) {
 		if (event.results[i].isFinal) {
-			console.log("final"+ JSON.stringify(event.results))
 			final += event.results[i][0].transcript;
 			commands = commandFind(final, commandList.commands);
 			commandParse(commands);
@@ -255,7 +254,6 @@ recognition.onresult = function (event) {
 		}
 		else {
 			interim += event.results[i][0].transcript;
-			console.log("interim"+ JSON.stringify(event.results))
 		} 
 
 	}
@@ -263,7 +261,7 @@ recognition.onresult = function (event) {
 	interim_span.innerHTML = interim;
 	commandExecute(commandThread)
 	
-}  
+}
 
 function reset() {
 	recognizing = false;
