@@ -33,7 +33,7 @@ var More = {
 		voiceQueue = [];
 		console.log('cursor is ' + voiceCursor.name);
 		audio.setAttribute('src', '');
-		voiceSynth('One moment please.', voiceCursor);
+		playTone('loading.wav');
 		more_text = yelpMore(voiceCursor);
 		for (var i = 0; i < yelpMore.length; i++) {
 			voiceSynth(more_text, voiceCursor);
@@ -175,7 +175,7 @@ if (!('webkitSpeechRecognition' in window)) {
 	upgrade_warning.innerHTML = 'This Demo requires Chrome version 25 or higher. Please switch browsers before continuing.';
 }
 else {
-	//window.onload = voiceSynth(welcome.innerHTML, null)
+	window.onload = voiceSynth(welcome.innerHTML, null);
 	window.onload = navigator.geolocation.getCurrentPosition(setLocation, errorLocation);
 	var recognition = new webkitSpeechRecognition();
 	recognition.continuous = true;
@@ -277,6 +277,7 @@ function toggleStartStop() {
 	if (recognizing) {
 		recognition.stop();
 		reset();
+		playTone('cancel.wav');
 	}
 	else {
 		recognition.start();
@@ -285,7 +286,7 @@ function toggleStartStop() {
 		image_src.src = 'images/mic-animate.gif';
 		final_span.innerHTML = '';
 		interim_span.innerHTML = '';
-
+		playTone('begin.wav');
 	}
 }
 ////Command Parsing and execution logic
@@ -334,10 +335,11 @@ function commandExecute(query) {
 	 	if(commandThread[Object.keys(query)[i]] == "") {
 			delete commandThread[Object.keys(query)[i]];
 		}}
-	if (Object.keys(query).length > 4 && query.term && voiceCursor === null) {
+	if (Object.keys(query).length > 4 && query.term) {
 		if (query.term) {term = query.term};	
 		console.log("keys " + Object.keys(query)); 
 		console.log("query" + JSON.stringify(query));
+		playTone('morse.wav');
 		$.ajax(api_URL + JSON.stringify(query), {
 		type: 'GET',
 		dataType: 'JSON',
@@ -355,6 +357,7 @@ function commandExecute(query) {
 			}
 		},
 		error: function (xhr, ajaxOptions, thrownError) {
+			playTone('error.wav');
 			console.log(xhr);
 			console.log(ajaxOptions);
 			console.log(thrownError);
@@ -389,6 +392,7 @@ function voiceCall (string, name) {
 			voiceCleanup();	
 		},
 		error: function(xhr, ajaxOptions, thrownError) {
+			playTone('error.wav');
 			console.log(xhr);
 			console.log(ajaxOptions);
 			console.log(thrownError);
