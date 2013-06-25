@@ -166,7 +166,7 @@ var commandList = {
 };
 
 var voiceQueue = [];
-
+var speed = 0;
 //Error and edgecase logic
 if (!('webkitSpeechRecognition' in window)) {
 	button.style.display = 'none';
@@ -199,7 +199,6 @@ var commandThread = new commandThreadDefault();
 var locationString = '';
 var api_URL = '/yelp/';
 var results = '';
-var speed = 175;
 var voiceBusy = false;
 var voiceCursor = null;
 var ajaxBusy;
@@ -348,6 +347,7 @@ function commandExecute(query) {
 			console.log(data);
 			results = data;
 			voiceSynth('There are '+ results.total + ' results for ' + term + '.', null);
+			console.log(results.total + ' ' + term)
 			for (var i = 0; i < Object.keys(results.businesses).length; i++) {
 				name = results.businesses[i].name + '	 - ';
 				rating = results.businesses[i].rating + ' stars. ';
@@ -382,6 +382,31 @@ function voiceSynth (string, name) {
 function voiceCall (string, name) {
 	voiceBusy = true;
 	console.log('synth called on ' + string);
+	$.ajax('read/?text=' + string + '&speed=' + speed, {
+		type: 'GET',
+		success: function(src) {
+			audio.setAttribute('src', src);	
+			audio.play();		
+			console.log(src)
+			ajaxBusy = false;
+			voiceCursor = name;
+			voiceCleanup();	
+		},
+		error: function(xhr, ajaxOptions, thrownError) {
+			playTone('error.wav');
+			console.log(xhr);
+			console.log(ajaxOptions);
+			console.log(thrownError);
+			ajaxBusy = false;
+			voiceCleanup();
+			}
+	});
+}
+
+/*  Old Voice call with speech.js
+function voiceCall (string, name) {
+	voiceBusy = true;
+	console.log('synth called on ' + string);
 	$.ajax('read/?string=' + string + '&speed=' + speed, {
 		type: 'GET',
 		success: function(src) {
@@ -401,6 +426,8 @@ function voiceCall (string, name) {
 			}
 	});
 }
+
+*/
 
 function handleAudioEnded() {
 	console.log('audio has ended');
