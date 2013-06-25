@@ -82,7 +82,7 @@ app.get('/test/*', function(req, res) {
 });
 */
 
-app.get('/read/*', function(req, res) {
+/*app.get('/read/*', function(req, res) {
 	var text = req.query.text
 	var speed = req.query.speed
 	var iSpeech_string = 'http://api.ispeech.org/api/rest?apikey=64942b46a036bf4379f556734042333a&action=convert&text=' + text + '&voice=usenglishfemale&speed=' + speed
@@ -107,8 +107,10 @@ app.get('/read/*', function(req, res) {
 	res.end()
 });	
 
+*/
+
 //Speech.js call
-app.get('/test/*', function(req, res) {
+app.get('/read/*', function(req, res) {
 	var string = req.query.text;
 	var speed = parseInt(req.query.speed,10);
 

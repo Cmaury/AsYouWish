@@ -147,6 +147,18 @@ var Help = {
 	'help': 'Help - List all currently available commands.  '
 };
 
+var Call = {
+	'str': 'call',
+	'param': null,
+	'action': function() {
+		voiceSynth('Calling ' + voiceCursor.name ,null)
+		return input;
+	},
+	'commands': [
+	],
+	'help': 'Search - Specify what you would like to search for. Example values: Dinner, Chinese, McDonald\'s. '
+};
+
 var commandList = {
 	'str': 'commandList',
 	'commands': [
@@ -161,7 +173,8 @@ var commandList = {
 		Faster,
 		Slower,
 		Rate,
-		Help
+		Help,
+		Call
 	]
 };
 
@@ -175,7 +188,7 @@ if (!('webkitSpeechRecognition' in window)) {
 	upgrade_warning.innerHTML = 'This Demo requires Chrome version 25 or higher. Please switch browsers before continuing.';
 }
 else {
-	window.onload = voiceSynth(welcome.innerHTML, null);
+	//window.onload = voiceSynth(welcome.innerHTML, null);
 	window.onload = navigator.geolocation.getCurrentPosition(setLocation, errorLocation);
 	var recognition = new webkitSpeechRecognition();
 	recognition.continuous = true;
@@ -190,10 +203,10 @@ commandFind();
 recognition.onend = reset;
 var guessed_location = '';
 function commandThreadDefault () {
-	this.category_filter = 'restaurants';  //set search degaults
+	this.category_filter = 'coffee';  //set search degaults
 	this.location = guessed_location;
 	this.limit = 5;
-	this.radius_filter = 500;
+	this.radius_filter = 1000;
 }
 var commandThread = new commandThreadDefault();
 var locationString = '';
@@ -208,15 +221,15 @@ var speechString = '';
 
 //defines which sub attributes to read for the yelp result set.
 function yelpMore(voiceCursor) {
-	sentence1 = voiceCursor.name + ' is a ' + voiceCursor.categories[0][0] + ' '+  commandThread.category_filter + '.  ';
+	sentence1 = voiceCursor.name + ' is a coffe and tea store'; //+ voiceCursor.categories[0][0] + ' '+  commandThread.category_filter + '.  ';
 	sentence2 = 'Located in the '+ voiceCursor.location.neighborhoods[0] + ' area with a rating of ' +	voiceCursor.rating + ' stars from ' + voiceCursor.review_count + ' reviewers.  ';
 	sentence3 = voiceCursor.name + 'is described as quote ' + voiceCursor.snippet_text + '.  ';
 	var phoneStr;
-	for (var i = 0; i < voiceCursor.phone.length; i++) {
+	/*for (var i = 0; i < voiceCursor.phone.length; i++) {
 		phoneStr += voiceCursor.phone[i] + ' ';
 	}
-	sentence4 = 'For more information, call - ' + phoneStr.slice(1);
-	return [sentence1,sentence2,sentence3,sentence4];
+	sentence4 = 'For more information, call - ' + phoneStr.slice(1); */
+	return [sentence1, sentence2, sentence3/*,sentence4*/];
 }
 
 //Initial set up
@@ -511,7 +524,11 @@ function commandTranslate(command, input) {
 	if (command.str == 'search') {
 		console.log('search action called');
 		return Search.action(input);
-	}						
+	}
+	if (command.str == 'call') {
+		console.log('call action called');
+		return Call.action(input);
+	}							
 	else {
 		return input;
 	}
