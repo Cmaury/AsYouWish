@@ -203,7 +203,7 @@ commandFind();
 recognition.onend = reset;
 var guessed_location = '';
 function commandThreadDefault () {
-	this.category_filter = 'coffee';  //set search degaults
+	this.category_filter = 'restaurants';  //set search defaults
 	this.location = guessed_location;
 	this.limit = 5;
 	this.radius_filter = 1000;
@@ -221,7 +221,7 @@ var speechString = '';
 
 //defines which sub attributes to read for the yelp result set.
 function yelpMore(voiceCursor) {
-	sentence1 = voiceCursor.name + ' is a coffe and tea store'; //+ voiceCursor.categories[0][0] + ' '+  commandThread.category_filter + '.  ';
+	sentence1 = voiceCursor.name + ' is a '/*coffe and tea store'; */ + voiceCursor.categories[0][0] + ' business.';//+  commandThread.category_filter + '.  ';
 	sentence2 = 'Located in the '+ voiceCursor.location.neighborhoods[0] + ' area with a rating of ' +	voiceCursor.rating + ' stars from ' + voiceCursor.review_count + ' reviewers.  ';
 	sentence3 = voiceCursor.name + 'is described as quote ' + voiceCursor.snippet_text + '.  ';
 	var phoneStr;

@@ -82,11 +82,12 @@ app.get('/test/*', function(req, res) {
 });
 */
 
-/*app.get('/read/*', function(req, res) {
+app.get('/read/*', function(req, response) {
 	var text = req.query.text
 	var speed = req.query.speed
 	var iSpeech_string = 'http://api.ispeech.org/api/rest?apikey=64942b46a036bf4379f556734042333a&action=convert&text=' + text + '&voice=usenglishfemale&speed=' + speed
 	console.log(iSpeech_string)
+	var filename = Math.random().toString(36).substring(7) + '.mp3'
 	http.get(iSpeech_string, function(res){
 		audio = ''
 		res.setEncoding('binary')
@@ -94,23 +95,20 @@ app.get('/test/*', function(req, res) {
 			audio += src
 		})
 		res.on('end',function() {
-			fs.writeFile('public/result.mp3', audio, 'binary', function(err){
-            if (err) throw err
-            console.log('File saved.')
-        })
+			fs.writeFile('public/'+ filename, audio, 'binary', function(err){
+				if(err) throw err;
+				response.send(200, filename)
+				response.end()
+			})
 		})
 	}).on('error', function(e) {
   		console.log("Got error: " + e.message);
 		})
-	console.log("is this audio or an object" + audio)
-	res.send(200, 'result.mp3')
-	res.end()
+	//console.log("is this audio or an object" + audio)
 });	
 
-*/
-
 //Speech.js call
-app.get('/read/*', function(req, res) {
+app.get('/test/*', function(req, res) {
 	var string = req.query.text;
 	var speed = parseInt(req.query.speed,10);
 
