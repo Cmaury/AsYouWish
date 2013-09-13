@@ -104,7 +104,7 @@ app.get('/read/*', function(req, response) {
 	}).on('error', function(e) {
   		console.log("Got error: " + e.message);
 		})
-	//console.log("is this audio or an object" + audio)
+	//	console.log("is this audio or an object" + audio)
 });	
 
 //Speech.js call
